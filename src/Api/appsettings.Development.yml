@@ -1,0 +1,7 @@
+DataAccessRegistry:
+  ReadOnlyConnection: "Data Source=DBGESTRSDESA.andreani.com.ar;Initial Catalog=GestionTransportistas;User id=User_GestionTransportistas;Password=IVUCIivYGHK0nzGGDO3t"
+  TransactionalConnection: "Data Source=DBGESTRSDESA.andreani.com.ar;Initial Catalog=GestionTransportistas;User id=User_GestionTransportistas;Password=IVUCIivYGHK0nzGGDO3t"
+  ProviderName: System.Data.SqlClient
+Publisher:
+    Delay: 1000
+ApplicationName: "gestion_transportista_cron_requerimientos"

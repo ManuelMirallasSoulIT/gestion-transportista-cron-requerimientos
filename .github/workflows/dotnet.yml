@@ -1,0 +1,21 @@
+name: Build
+on:
+  push:
+    branches:
+      - main 
+  pull_request:
+    branches:
+      - main
+jobs:
+  sonarqube:
+    name: SonarQube Analyzer
+    runs-on: windows-latest
+    steps:
+      - name: SonarQube Analyzer
+        uses: architecture-it/actions@sonarqube
+        with:
+          github_username: ${{ secrets.ARQUITECTURA_USER }}
+          github_token: ${{ secrets.ARQUITECTURA_DEPLOY }}
+          sonar_url: ${{ secrets.SONAR_HOST_URL }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          sonar_code: '.Net'

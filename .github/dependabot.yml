@@ -1,0 +1,16 @@
+version: 2
+
+registries:
+  nuget-github:
+    type: nuget-feed
+    url: https://nuget.pkg.github.com/architecture-it/index.json
+    token: ${{secrets.ARQUITECTURA_DEPLOY}}
+
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 5    
+    registries:
+    - nuget-github
