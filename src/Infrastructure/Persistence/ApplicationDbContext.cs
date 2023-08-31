@@ -1,4 +1,5 @@
-﻿using GDT.Common.Domain.Entities;
+﻿using Domain.Entities.Presentaciones;
+using GDT.Common.Domain.Entities;
 using gestion_transportista_cron_requerimientos.Application.Common.Interfaces;
 using gestion_transportista_cron_requerimientos.Domain.Entities.Documentos;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     
     public DbSet<Eventos> Eventos { get; set; }
     public DbSet<Requerimientos> Requerimientos { get; set; }
+    
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

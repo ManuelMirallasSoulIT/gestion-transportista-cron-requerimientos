@@ -9,4 +9,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="GDT.Common" Version="1.4.0" />
+	</ItemGroup>
 </Project>

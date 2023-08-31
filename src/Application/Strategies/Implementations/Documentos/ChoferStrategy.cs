@@ -1,10 +1,12 @@
 ﻿
 using Andreani.ARQ.Core.Interface;
 using Application.Strategies;
+using Domain.Entities.Presentaciones;
 using GDT.Common.Domain.Entities;
 using gestion_transportista_cron_requerimientos.Application.Common.Interfaces;
 using gestion_transportista_cron_requerimientos.Domain.Dtos.Documentos;
 using gestion_transportista_cron_requerimientos.Domain.Entities.Documentos;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,167 +33,96 @@ namespace gestion_transportista_cron_requerimientos.Application.Strategies.Imple
         {
             return await _context.CreateTransaction(async context =>
             {
-                var requerimientosEliminar = await RequerimientosParaEliminar(requerimiento);
-                _transactionalRepository.DeleteRange(requerimientosEliminar);
-
-                var RequerimientosInsertar = await RequerimientosParaActualizar(requerimiento);
-                _transactionalRepository.InsertRange(RequerimientosInsertar);
-            });
-        }
-
-        private async Task<IEnumerable<Requerimientos>> RequerimientosParaEliminar(RequerimientoDto requerimiento)
-        {
-            var requerimientos = await _query
+                var requerimientosEliminar = await _query
                     .From<Requerimientos>()
                     .Where(r => $"(@Requisito IS NOT NULL AND @Chofer IS NOT NULL AND (Requisito = @Requisito AND Chofer = @Chofer))", new { requerimiento.Requisito, requerimiento.Chofer }, TypeWhere.OR)
                     .Where(r => $"(@Requisito IS NOT NULL AND @Chofer IS NULL AND (Requisito = @Requisito))", new { requerimiento.Requisito }, TypeWhere.OR)
                     .Where(r => $"(@Requisito IS NULL AND @Chofer IS NOT NULL AND (Chofer = @Chofer))", new { requerimiento.Chofer }, TypeWhere.OR)
                     .Execute();
+                _transactionalRepository.DeleteRange(requerimientosEliminar);
 
-            return requerimientos;
+                await RequerimientosParaActualizar(requerimiento);
+                //_transactionalRepository.InsertRange(requerimientosInsertar);
+            });
         }
 
-        private async Task<IEnumerable<Requerimientos>> RequerimientosParaActualizar(RequerimientoDto requerimiento)
+        private async Task RequerimientosParaActualizar(RequerimientoDto requerimientoDto)
         {
-            var nuevosRequerimientos = new List<Requerimientos>();
+            var requisitosActivos = await _query
+                                            .From<Requisitos>()
+                                            .Where(r => $"Activo = 1 AND Entidad = 'C'", where: TypeWhere.AND)
+                                            .Where(r => $"((@Requisito IS NOT NULL AND Id = @Requisito) OR @Requisito IS NULL)", new { requerimientoDto.Requisito })
+                                            .Execute();
 
-            var requisitosActivos = await _query.From<Requisitos>().Where(r => r.Activo).Execute();
-            var choferesActivos = await _query.From<Choferes>().Where(c => c.Activo).Execute();
+            var choferesActivos = await _query
+                                            .From<Choferes>()
+                                            .Where(r => $"Activo = 1", where: TypeWhere.AND)
+                                            .Where(r => $"((@Chofer IS NOT NULL AND Id = @Chofer) OR @Chofer IS NULL)", new { requerimientoDto.Chofer })
+                                            .Execute();
 
-            var requisitosProcesar = requerimiento.Requisito.HasValue
-                ? requisitosActivos.Where(r => r.Id == requerimiento.Requisito.Value)
-                : requisitosActivos;
-
-            foreach (var requisito in requisitosProcesar)
-            {
-                await ProcesarRequisito(requisito, requerimiento.Chofer, choferesActivos, nuevosRequerimientos);
-            }
-
-            return nuevosRequerimientos;
-        }
-
-
-        private async Task ProcesarRequisito(Requisito requisito, long choferId)
-        {
-            if (!requisito.AplicaAChofer) return;
-
-            var choferesActivos = await _query.From<Choferes>().Where(c => c.Activo).Execute();
+            // Agarrar el listado de ids de choferes y requisitos
+            // SELECT * 
+            // FROM RequisitosPresentados
+            // WHERE
+            // (0 = @RequisitosCount OR RequisitosPresentados.Requisito IN @Requisitos) AND
+            // (0 = @choferesActivosCount OR RequisitosPresentados.Chofer IN @choferesActivos)
+            var presentaciones = await _query
+                                           .From<RequisitoPresentado>()
+                                           .Where(rp => $"", new { }, TypeWhere.AND)
+                                           .Where(rp => $"", new { })
+                                           .Execute();
 
             foreach (var chofer in choferesActivos)
             {
-                await CrearRequerimiento(requisito, chofer);
-            }
-        }
-        
-
-        private bool cumpleCaracteristica(Choferes chofer, Caracteristicas caracteristica)
-        {
-            //// COMO (/&%$ DETERMINO CARACTERISTICAS A CUMPLIR ?????????????
-
-            return false;
-        }
-
-        private async Task CrearRequerimiento(Requisito requisito, Choferes chofer)
-        {
-            if (requisito.Caracteristica == null || cumpleCaracteristica(chofer, requisito.Caracteristica))
-            {
-                var mejorPresentacion = await ObtenerMejorPresentacion(requisito, chofer);
-
-                var nuevoRequerimiento = new Requerimientos
+                foreach (var requisito in requisitosActivos)
                 {
-                    Requisito = requisito.Id,
-                    Proveedor = requisito.Proveedor,
-                    Chofer = chofer.Id,
-                    Unidad = chofer.Unidad,
-                    Estado = CalcularEstadoRequerimiento(mejorPresentacion),
-                    Presentacion = mejorPresentacion?.Id ?? 0,
-                    FechaCreacion = DateTime.Now,
-                    FechaModificacion = DateTime.Now,
-                    UsuarioCreacion = "",
-                    UsuarioModificacion = null
-                };
+                    var requerimiento = new Requerimientos()
+                    {
+                        Chofer = chofer.Id,
+                        Requisito = requisito.Id,
+                        FechaCreacion = DateTime.Now,
+                        UsuarioCreacion = requerimientoDto.Usuario,
+                    };
 
-                _transactionalRepository.Insert(nuevoRequerimiento);
+                    var presentacionesRequisito = presentaciones.Where(m => m.Requisito.Id == requisito.Id).ToList();
+
+                    // Si no hay ninguna Presentación, devuelve Estado No Presentado y el Id de la Presentación nulo.
+                    if (!presentacionesRequisito.Any())
+                    {
+                        requerimiento.Estado = "No presentado";
+                        requerimiento.Presentacion = null;
+                        continue;
+                    }
+
+                    // Si no, si hay por lo menos una Presentación con estado Aprobado, devuelve Estado Aprobado y el mayor Id de la Presentación.
+                    if (presentacionesRequisito.Exists(m => m.Status == "A"))
+                    {
+                        requerimiento.Estado = "Aprobado";
+                        requerimiento.Presentacion = presentaciones.OrderByDescending(m => m.Id).First(m => m.Status == "A")?.Id;
+                        continue;
+                    }
+
+                    // TODO: Cuando se agregue la excepcion a requisito, validar: 
+                    // Si no, si hay por lo menos una Presentación con estado Aprobado por Excepción, devuelve Estado Aprobado por Excepción y el mayor Id de la Presentación.
+                    //if (presentacionesRequisito.Exists(m => m.Status == "A" ))
+                    //{
+
+                    //}
+
+                    // Si no, si hay por lo menos una Presentación con estado Pendiente, devuelve Estado Pendiente y el mayor Id de la Presentación.
+                    if (presentacionesRequisito.Exists(m => m.Status == "P"))
+                    {
+                        requerimiento.Estado = "Pendiente";
+                        requerimiento.Presentacion = presentaciones.OrderByDescending(m => m.Id).First(m => m.Status == "P")?.Id;
+                        continue;
+                    }
+
+                    // Si no, devuelve Estado Rechazado y el mayor Id de la Presentación.
+                    requerimiento.Estado = "Rechazado";
+                    requerimiento.Presentacion = presentaciones.OrderByDescending(m => m.Id).First().Id;
+
+                }
             }
-        }       
-
-        /////////////////////////////////// Opcion 1
-        private async Task<Presentacion> ObtenerMejorPresentacion(Requisito requisito, Choferes chofer)
-        {
-            var presentaciones = await _query
-                .From<requisitosPresentados>()
-                .Where(p => p.Requisito == requisito.Id && p.Proveedor == requisito.Proveedor && p.Chofer == chofer.Id && p.Unidad == chofer.Unidad)
-                .Execute();
-
-            if (!presentaciones.Any()) return null;
-            
-
-            var presentacionesOrdenadas = requisito.TipoVencimiento switch
-            {
-                TipoVencimiento.UnicaVez => presentaciones.OrderBy(p => p.Estado == EstadoPresentacion.Aprobado ? 0 : p.Estado == EstadoPresentacion.AprobadoPorExcepcion ? 1 : 2)
-                                                         .ThenBy(p => p.Estado == EstadoPresentacion.Aprobado ? p.Id : p.Id)
-                                                         .FirstOrDefault(),
-                TipoVencimiento.Vencimiento => presentaciones.OrderBy(p => p.Estado == EstadoPresentacion.Aprobado ? 0 : p.Estado == EstadoPresentacion.AprobadoPorExcepcion ? 1 : p.FechaVencimiento < DateTime.Now ? 4 : 2)
-                                                             .ThenBy(p => p.Estado == EstadoPresentacion.Aprobado && p.FechaVencimiento < DateTime.Now ? -p.Id : p.Id)
-                                                             .FirstOrDefault(),
-              _ => throw new ArgumentException($"Tipo de vencimiento no reconocido: {tipoVencimientoDesconocido}")
-              
-            };
-
-            return presentacionesOrdenadas;
-        }
-        ////////////////// OPCION 2
-        private async Task<Presentacion> ObtenerMejorPresentacion1(Requisito requisito, Choferes chofer)
-        {
-            var presentaciones = await _query
-                .From<requisitosPresentados>()
-                .Where(p => p.Requisito == requisito.Id && p.Proveedor == requisito.Proveedor && p.Chofer == chofer.Id && p.Unidad == chofer.Unidad)
-                .Execute();
-
-            if (!presentaciones.Any()) return null;
-
-            var presentacionesOrdenadas = requisito.TipoVencimiento switch
-            {
-                TipoVencimiento.UnicaVez => OrdenarPresentacionesUnicaVez(presentaciones),
-                TipoVencimiento.Vencimiento => OrdenarPresentacionesVencimiento(presentaciones),
-                _ => throw new ArgumentException($"Tipo de vencimiento no reconocido: {tipoVencimientoDesconocido}")
-            };
-
-            return presentacionesOrdenadas;
-        }
-
-        private Presentacion OrdenarPresentacionesUnicaVez(IEnumerable<Presentacion> presentaciones)
-        {
-            return presentaciones.OrderBy(p =>
-                    p.Estado == EstadoPresentacion.Aprobado ? 0 :
-                    p.Estado == EstadoPresentacion.AprobadoPorExcepcion ? 1 : 2)
-                .ThenBy(p => p.Estado == EstadoPresentacion.Aprobado ? p.Id : p.Id)
-                .FirstOrDefault();
-        }
-
-        private Presentacion OrdenarPresentacionesVencimiento(IEnumerable<Presentacion> presentaciones)
-        {
-            return presentaciones.OrderBy(p =>
-                    p.Estado == EstadoPresentacion.Aprobado ? 0 :
-                    p.Estado == EstadoPresentacion.AprobadoPorExcepcion ? 1 :
-                    p.FechaVencimiento < DateTime.Now ? 4 : 2)
-                .ThenBy(p =>
-                    p.Estado == EstadoPresentacion.Aprobado && p.FechaVencimiento < DateTime.Now ?
-                    -p.Id : p.Id)
-                .FirstOrDefault();
-        }
-
-
-        private EstadoRequerimiento CalcularEstadoRequerimiento(Presentacion presentacion)
-        {
-            return presentacion?.Estado switch
-            {
-                EstadoPresentacion.Aprobado => EstadoRequerimiento.Aprobado,
-                EstadoPresentacion.AprobadoPorExcepcion => EstadoRequerimiento.AprobadoPorExcepcion,
-                EstadoPresentacion.Pendiente => EstadoRequerimiento.Pendiente,
-                EstadoPresentacion.Vencido => EstadoRequerimiento.Vencido,
-                _ => EstadoRequerimiento.Rechazado
-            };
         }
 
 
