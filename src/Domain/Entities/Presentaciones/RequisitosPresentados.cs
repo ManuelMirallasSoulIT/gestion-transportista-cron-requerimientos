@@ -3,7 +3,7 @@ using System;
 
 namespace Domain.Entities.Presentaciones;
 
-public class RequisitoPresentado
+public class RequisitosPresentados
 {
 	public long Id { get; set; }
 
@@ -29,7 +29,7 @@ public class RequisitoPresentado
 
 	public string MotivoRechazo { get; set; }
 
-	public RequisitoPresentado()
+	public RequisitosPresentados()
 	{
 		Requisito = new Requisitos();
 	}

@@ -17,7 +17,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     
     public DbSet<Eventos> Eventos { get; set; }
     public DbSet<Requerimientos> Requerimientos { get; set; }
-    
+    public DbSet<RequisitosPresentados> RequisitosPresentados { get; set; }   
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
