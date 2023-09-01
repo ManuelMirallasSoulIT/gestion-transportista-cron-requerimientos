@@ -128,7 +128,7 @@ namespace gestion_transportista_cron_requerimientos.Application.Strategies.Imple
 
                         var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
 
-                        PresentacionesHelper.DeterminateBetterPresentation(presentacionesRequisito, requerimientos, requerimiento);
+                        PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
                     }
                 }
 
