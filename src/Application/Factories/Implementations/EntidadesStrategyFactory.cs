@@ -13,28 +13,30 @@ public class EntidadStrategyFactory : IEntidadStrategyFactory
 {
     private readonly ITransactionalRepository _transactionalRepository;
     private readonly IReadOnlyQuery _query;
-    private readonly IApplicationDbContext _context;
     private readonly ILogger<EntidadStrategyFactory> _logger;
     private readonly IEventosService _eventosService;
 
-    public EntidadStrategyFactory(ITransactionalRepository transactionalRepository, IReadOnlyQuery query, IApplicationDbContext context, ILogger<EntidadStrategyFactory> logger, IEventosService eventosService)
+    public EntidadStrategyFactory(
+        ITransactionalRepository transactionalRepository, 
+        IReadOnlyQuery query,
+        ILogger<EntidadStrategyFactory> logger,
+        IEventosService eventosService)
     {
         _transactionalRepository = transactionalRepository;
         _query = query;
-        _context = context;  
         _logger = logger;
         _eventosService = eventosService;
     }
 
     public IEntidadStrategy CreateRequisitoStrategy() =>
-        new RequisitoStrategy(_query, _transactionalRepository, _context);
+        new RequisitoStrategy(_query, _transactionalRepository);
 
     public IEntidadStrategy CreateChoferStrategy() =>
-         new ChoferStrategy(_query, _transactionalRepository, _context, _logger, _eventosService);
+         new ChoferStrategy(_query, _transactionalRepository, _logger, _eventosService);
 
     public IEntidadStrategy CreateProveedorStrategy() =>
-        new ProveedorStrategy(_query, _transactionalRepository, _context);
+        new ProveedorStrategy(_query, _transactionalRepository);
 
     public IEntidadStrategy CreateUnidadStrategy() =>
-        new UnidadStrategy(_query, _transactionalRepository, _context);
+        new UnidadStrategy(_query, _transactionalRepository);
 }

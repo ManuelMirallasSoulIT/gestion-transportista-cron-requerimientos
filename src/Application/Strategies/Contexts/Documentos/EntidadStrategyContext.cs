@@ -1,4 +1,5 @@
 ﻿using Application.Strategies;
+using GDT.Common.Domain.Entities;
 using gestion_transportista_cron_requerimientos.Application.Factories.Interfaces;
 using gestion_transportista_cron_requerimientos.Domain.Dtos.Documentos;
 using System;
@@ -26,8 +27,8 @@ public class EntidadStrategyContext
         };
     }
 
-    public async Task<bool> ExecuteAsync(RequerimientoDto requerimientoDto)
-        => await _entidadStrategy.ActualizarRequerimientos(requerimientoDto);
+    public async Task<bool> ExecuteAsync(RequerimientoDto requerimientoDto, Eventos evento)
+        => await _entidadStrategy.ActualizarRequerimientos(requerimientoDto, evento);
 }
 
 

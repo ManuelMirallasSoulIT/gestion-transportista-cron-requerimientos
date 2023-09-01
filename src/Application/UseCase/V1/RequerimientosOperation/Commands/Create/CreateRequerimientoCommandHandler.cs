@@ -21,6 +21,6 @@ public class CreateRequerimientoCommandHandler : IRequestHandler<CreateRequerimi
         using var scope = _container.CreateScope();
         var factory = scope.ServiceProvider.GetRequiredService<IEntidadStrategyFactory>();
         var strategy = new EntidadStrategyContext(request.RequerimientoDto.Tipo, factory);
-        return await strategy.ExecuteAsync(request.RequerimientoDto);
+        return await strategy.ExecuteAsync(request.RequerimientoDto, request.Evento);
     }
 }

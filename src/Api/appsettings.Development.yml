@@ -3,5 +3,5 @@ DataAccessRegistry:
   TransactionalConnection: "Data Source=DBGESTRSDESA.andreani.com.ar;Initial Catalog=GestionTransportistas;User id=User_GestionTransportistas;Password=IVUCIivYGHK0nzGGDO3t"
   ProviderName: System.Data.SqlClient
 Publisher:
-    Delay: 1000
+    Delay: 180000
 ApplicationName: "gestion_transportista_cron_requerimientos"

@@ -1,5 +1,4 @@
-﻿using gestion_transportista_cron_requerimientos.Application.UseCase.V1.EventosOperation.Commands.Update;
-using gestion_transportista_cron_requerimientos.Application.UseCase.V1.EventosOperation.Queries.GetAll;
+﻿using gestion_transportista_cron_requerimientos.Application.UseCase.V1.EventosOperation.Queries.GetAll;
 using gestion_transportista_cron_requerimientos.Application.UseCase.V1.RequerimientosOperation.Commands.Create;
 using gestion_transportista_cron_requerimientos.Domain.Dtos.Documentos;
 using MediatR;
@@ -40,11 +39,7 @@ public class RequerimientosServices : BackgroundService
                     foreach (var evento in eventos)
                     {
                         var requerimiento = JsonConvert.DeserializeObject<RequerimientoDto>(evento.Evento);
-                        var saved = await _mediator.Send(new CreateRequerimientoCommand() { RequerimientoDto = requerimiento }, stoppingToken);
-
-                        if (!saved) continue;
-                        
-                        await _mediator.Send(new UpdateEventoCommand() { Evento = evento }, stoppingToken);
+                        await _mediator.Send(new CreateRequerimientoCommand() { RequerimientoDto = requerimiento, Evento = evento }, stoppingToken);
                     }
                 }
 
@@ -53,6 +48,7 @@ public class RequerimientosServices : BackgroundService
             {
                 _logger.LogError(message: ex.Message);
             }
+
             await Task.Delay(_miliseconds, stoppingToken);
         }
     }

@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Presentaciones;
+﻿using Domain.Entities.Presentacion;
 using GDT.Common.Domain.Entities;
 using gestion_transportista_cron_requerimientos.Application.Common.Interfaces;
 using gestion_transportista_cron_requerimientos.Domain.Entities.Documentos;
@@ -17,7 +17,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     
     public DbSet<Eventos> Eventos { get; set; }
     public DbSet<Requerimientos> Requerimientos { get; set; }
-    public DbSet<RequisitosPresentados> RequisitosPresentados { get; set; }   
+    public DbSet<RequisitosPresentados> RequisitosPresentados { get; set; }
+    public DbSet<Roles> Roles { get; set; }
+    public DbSet<Requisitos> Requisitos { get; set; }
+    public DbSet<RequisitoRol> RequisitoRol { get; set; }
+    public DbSet<EstadoRequisito> EstadoRequisito { get; set; }
+    public DbSet<Personas> Personas { get; set; }
+    public DbSet<Proveedores> Proveedores { get; set; }
+    public DbSet<Choferes> Choferes { get; set; }
+    public DbSet<Unidades> Unidades { get; set; }
+    public DbSet<PersonasFisicas> PersonasFisicas { get; set; }
+    public DbSet<PersonasJuridicas> PersonasJuridicas { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

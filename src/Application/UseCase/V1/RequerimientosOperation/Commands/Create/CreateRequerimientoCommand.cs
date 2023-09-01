@@ -1,4 +1,5 @@
-﻿using gestion_transportista_cron_requerimientos.Domain.Dtos.Documentos;
+﻿using GDT.Common.Domain.Entities;
+using gestion_transportista_cron_requerimientos.Domain.Dtos.Documentos;
 using MediatR;
 
 namespace gestion_transportista_cron_requerimientos.Application.UseCase.V1.RequerimientosOperation.Commands.Create;
@@ -6,4 +7,5 @@ namespace gestion_transportista_cron_requerimientos.Application.UseCase.V1.Reque
 public sealed class CreateRequerimientoCommand : IRequest<bool>
 {
     public RequerimientoDto RequerimientoDto { get; set; }
+    public Eventos Evento { get; set; }
 }

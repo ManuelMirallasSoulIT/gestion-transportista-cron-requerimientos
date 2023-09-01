@@ -1,6 +1,6 @@
 ﻿using Andreani.ARQ.Core.Interface;
 using Application.Strategies;
-using gestion_transportista_cron_requerimientos.Application.Common.Interfaces;
+using GDT.Common.Domain.Entities;
 using gestion_transportista_cron_requerimientos.Domain.Dtos.Documentos;
 using System.Threading.Tasks;
 
@@ -10,18 +10,17 @@ public class RequisitoStrategy : IEntidadStrategy
 {
     private readonly ITransactionalRepository _transactionalRepository;
     private readonly IReadOnlyQuery _query;
-    private readonly IApplicationDbContext _context;
 
-    public RequisitoStrategy(IReadOnlyQuery query, ITransactionalRepository transactionalRepository, IApplicationDbContext context)
+    public RequisitoStrategy(
+        IReadOnlyQuery query, 
+        ITransactionalRepository transactionalRepository)
     {
         _query = query;
         _transactionalRepository = transactionalRepository;
-        _context = context;
     }
 
-    public async Task<bool> ActualizarRequerimientos(RequerimientoDto requerimiento)
+    public Task<bool> ActualizarRequerimientos(RequerimientoDto requerimiento, Eventos evento)
     {
-        return true;
+        throw new System.NotImplementedException();
     }
-
 }
