@@ -19,7 +19,6 @@ public class EntidadStrategyContext
     {
         return entidad switch
         {
-            "Requisito" => strategyFactory.CreateRequisitoStrategy(),
             "Chofer" => strategyFactory.CreateChoferStrategy(),
             "Proveedor" => strategyFactory.CreateProveedorStrategy(),
             "Unidad" => strategyFactory.CreateUnidadStrategy(),
@@ -30,5 +29,3 @@ public class EntidadStrategyContext
     public async Task<bool> ExecuteAsync(RequerimientoDto requerimientoDto, Eventos evento)
         => await _entidadStrategy.ActualizarRequerimientos(requerimientoDto, evento);
 }
-
-

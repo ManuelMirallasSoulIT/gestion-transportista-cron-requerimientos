@@ -28,6 +28,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Unidades> Unidades { get; set; }
     public DbSet<PersonasFisicas> PersonasFisicas { get; set; }
     public DbSet<PersonasJuridicas> PersonasJuridicas { get; set; }
+    public DbSet<CaracteristicasChoferes> CaracteristicasChoferes { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

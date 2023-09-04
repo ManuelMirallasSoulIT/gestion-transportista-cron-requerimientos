@@ -4,7 +4,6 @@ namespace gestion_transportista_cron_requerimientos.Application.Factories.Interf
 
 public interface IEntidadStrategyFactory
 {
-    IEntidadStrategy CreateRequisitoStrategy();
     IEntidadStrategy CreateChoferStrategy();
     IEntidadStrategy CreateProveedorStrategy();
     IEntidadStrategy CreateUnidadStrategy();

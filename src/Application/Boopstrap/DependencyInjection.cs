@@ -21,7 +21,6 @@ public static class DependencyInjection
         services.AddScoped<IEntidadStrategy, ChoferStrategy>();
         services.AddScoped<IEntidadStrategy, UnidadStrategy>();
         services.AddScoped<IEntidadStrategy, ProveedorStrategy>();
-        services.AddScoped<IEntidadStrategy, RequisitoStrategy>();
         services.AddScoped<IEntidadStrategyFactory, EntidadStrategyFactory>();
         services.AddOptions();
 
