@@ -15,6 +15,7 @@ public static class PresentacionesHelper
     /// <param name="presentacionesRequisito"></param>
     /// <param name="requerimientos"></param>
     /// <param name="requerimiento"></param>
+    /// <param name="requisito"></param>
     public static void DeterminarMejorPresentacion(
         List<RequisitosPresentados> presentacionesRequisito, 
         List<Requerimientos> requerimientos,

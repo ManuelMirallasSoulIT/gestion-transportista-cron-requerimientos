@@ -121,7 +121,7 @@ namespace gestion_transportista_cron_requerimientos.Application.Strategies.Imple
                             Chofer = chofer.Id,
                             Requisito = requisito.Id,
                             FechaCreacion = DateTime.Now,
-                            UsuarioCreacion = requerimientoDto.Usuario,
+                            UsuarioCreacion = requerimientoDto?.Usuario ?? "",
                         };
 
                         _logger.LogInformation($"Creando requerimiento para chofer {chofer.Id} y requisito {requisito.Id}");
