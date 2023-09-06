@@ -82,13 +82,13 @@ public class UnidadStrategy : IEntidadStrategy
                                         .From<Requisitos>()
                                         .Where(r => $"Activo = 1 AND Entidad = 'U'", where: TypeWhere.AND)
                                         .Where(r => $"((@Requisito IS NOT NULL AND Id = @Requisito) OR @Requisito IS NULL)", new { requerimientoDto.Requisito })
-                                        .Execute();
+                                        .Execute() ?? new List<Requisitos>();
 
             var unidadesActivas = await _query
                                         .From<Unidades>()
                                         .Where(r => $"Activo = 1", where: TypeWhere.AND)
                                         .Where(r => $"((@Unidad IS NOT NULL AND Id = @Unidad) OR @Unidad IS NULL)", new { requerimientoDto.Unidad })
-                                        .Execute();
+                                        .Execute() ?? new List<Unidades>();
 
             var requisitosRequest = new
             {
@@ -107,12 +107,12 @@ public class UnidadStrategy : IEntidadStrategy
                                        .From<RequisitosPresentados>()
                                        .Where(rp => $"(0 = @RequisitosCount OR RequisitosPresentados.Requisito IN @Requisitos)", requisitosRequest, TypeWhere.AND)
                                        .Where(rp => $" (0 = @UnidadesCount OR RequisitosPresentados.Unidad IN @Unidades)", unidadesRequest)
-                                       .Execute();
+                                       .Execute() ?? new List<RequisitosPresentados>();
 
             var caracteristicasUnidades = await _query
                                        .From<CaracteristicasUnidades>()
                                        .Where(rp => $" (0 = @UnidadesCount OR Unidad IN @Unidades)", unidadesRequest)
-                                       .Execute();
+                                       .Execute() ?? new List<CaracteristicasUnidades>();
 
 
 
@@ -128,16 +128,18 @@ public class UnidadStrategy : IEntidadStrategy
                         UsuarioCreacion = requerimientoDto?.Usuario ?? "",
                     };
 
-                    _logger.Information($"Creando requerimiento para unidad {unidad.Id} y requisito {requisito.Id}");
+                    
 
-                    // Si es distinto de null, aplica
-                    var caracteristica = caracteristicasUnidades.FirstOrDefault(m => requisito.Caracteristica != null &&
-                                                                            m.Caracteristica == requisito.Caracteristica &&
-                                                                            m.Unidad == unidad.Id);
+                    var aplicaProveedor = caracteristicasUnidades.Any(m => m.Unidad == unidad.Id && m.Caracteristica == requisito.Caracteristica);
 
-                    var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+                    if (requisito.Caracteristica is null || (requisito.Caracteristica is not null && aplicaProveedor))
+                    {
+                        _logger.Information($"Creando requerimiento para unidad {unidad.Id} y requisito {requisito.Id}");
 
-                    PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
+                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+
+                        PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
+                    }
                 }
             }
 

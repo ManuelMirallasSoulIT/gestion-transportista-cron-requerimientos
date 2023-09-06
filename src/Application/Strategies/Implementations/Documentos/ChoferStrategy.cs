@@ -83,13 +83,13 @@ public class ChoferStrategy : IEntidadStrategy
                                         .From<Requisitos>()
                                         .Where(r => $"Activo = 1 AND Entidad = 'C'", where: TypeWhere.AND)
                                         .Where(r => $"((@Requisito IS NOT NULL AND Id = @Requisito) OR @Requisito IS NULL)", new { requerimientoDto.Requisito })
-                                        .Execute();
+                                        .Execute() ?? new List<Requisitos>();
 
             var choferesActivos = await _query
                                         .From<Choferes>()
                                         .Where(r => $"Activo = 1", where: TypeWhere.AND)
                                         .Where(r => $"((@Chofer IS NOT NULL AND Id = @Chofer) OR @Chofer IS NULL)", new { requerimientoDto.Chofer })
-                                        .Execute();
+                                        .Execute() ?? new List<Choferes>();
 
             var requisitosRequest = new
             {
@@ -108,12 +108,12 @@ public class ChoferStrategy : IEntidadStrategy
                                        .From<RequisitosPresentados>()
                                        .Where(rp => $"(0 = @RequisitosCount OR RequisitosPresentados.Requisito IN @Requisitos)", requisitosRequest, TypeWhere.AND)
                                        .Where(rp => $" (0 = @ChoferesCount OR RequisitosPresentados.Chofer IN @Choferes)", choferesRequest)
-                                       .Execute();
+                                       .Execute() ?? new List<RequisitosPresentados>();
 
             var caracteristicasChoferes = await _query
                                        .From<CaracteristicasChoferes>()
                                        .Where(rp => $" (0 = @ChoferesCount OR Chofer IN @Choferes)", choferesRequest)
-                                       .Execute();
+                                       .Execute() ?? new List<CaracteristicasChoferes>();
 
 
 
@@ -129,16 +129,16 @@ public class ChoferStrategy : IEntidadStrategy
                         UsuarioCreacion = requerimientoDto?.Usuario ?? "",
                     };
 
-                    _logger.Information($"Creando requerimiento para chofer {chofer.Id} y requisito {requisito.Id}");
+                    var aplicaChofer = caracteristicasChoferes.Any(m => m.Chofer == chofer.Id && m.Caracteristica == requisito.Caracteristica);
 
-                    // Si es distinto de null, aplica
-                    var caracteristica = caracteristicasChoferes.FirstOrDefault(m => requisito.Caracteristica != null &&
-                                                                            m.Caracteristica == requisito.Caracteristica &&
-                                                                            m.Chofer == chofer.Id);
+                    if (requisito.Caracteristica is null || (requisito.Caracteristica is not null && aplicaChofer))
+                    {
+                        _logger.Information($"Creando requerimiento para chofer {chofer.Id} y requisito {requisito.Id}");
 
-                    var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
 
-                    PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
+                        PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
+                    }
                 }
             }
 

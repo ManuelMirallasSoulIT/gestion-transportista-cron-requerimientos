@@ -82,13 +82,13 @@ public class ProveedorStrategy : IEntidadStrategy
                                         .From<Requisitos>()
                                         .Where(r => $"Activo = 1 AND Entidad = 'P'", where: TypeWhere.AND)
                                         .Where(r => $"((@Requisito IS NOT NULL AND Id = @Requisito) OR @Requisito IS NULL)", new { requerimientoDto.Requisito })
-                                        .Execute();
+                                        .Execute() ?? new List<Requisitos>();
 
             var proveedoresActivos = await _query
                                         .From<Proveedores>()
                                         .Where(r => $"Activo = 1", where: TypeWhere.AND)
                                         .Where(r => $"((@Proveedor IS NOT NULL AND Id = @Proveedor) OR @Proveedor IS NULL)", new { requerimientoDto.Proveedor })
-                                        .Execute();
+                                        .Execute() ?? new List<Proveedores>();
 
             var requisitosRequest = new
             {
@@ -107,12 +107,12 @@ public class ProveedorStrategy : IEntidadStrategy
                                        .From<RequisitosPresentados>()
                                        .Where(rp => $"(0 = @RequisitosCount OR RequisitosPresentados.Requisito IN @Requisitos)", requisitosRequest, TypeWhere.AND)
                                        .Where(rp => $" (0 = @ProveedoresCount OR RequisitosPresentados.Proveedor IN @Proveedores)", proveedoresRequest)
-                                       .Execute();
+                                       .Execute() ?? new List<RequisitosPresentados>();
 
             var caracteristicasProveedores = await _query
                                        .From<CaracteristicasProveedores>()
                                        .Where(rp => $" (0 = @ProveedoresCount OR Proveedor IN @Proveedores)", proveedoresRequest)
-                                       .Execute();
+                                       .Execute() ?? new List<CaracteristicasProveedores>();
 
 
 
@@ -128,16 +128,16 @@ public class ProveedorStrategy : IEntidadStrategy
                         UsuarioCreacion = requerimientoDto?.Usuario ?? "",
                     };
 
-                    _logger.Information($"Creando requerimiento para proveedor {proveedor.Id} y requisito {requisito.Id}");
+                    var aplicaProveedor = caracteristicasProveedores.Any(m => m.Proveedor == proveedor.Id && m.Caracteristica == requisito.Caracteristica);
 
-                    // Si es distinto de null, aplica
-                    var caracteristica = caracteristicasProveedores.FirstOrDefault(m => requisito.Caracteristica != null &&
-                                                                            m.Caracteristica == requisito.Caracteristica &&
-                                                                            m.Proveedor == proveedor.Id);
+                    if (requisito.Caracteristica is null || (requisito.Caracteristica is not null && aplicaProveedor))
+                    {
+                        _logger.Information($"Creando requerimiento para proveedor {proveedor.Id} y requisito {requisito.Id}");
 
-                    var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
 
-                    PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
+                        PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
+                    }
                 }
             }
 

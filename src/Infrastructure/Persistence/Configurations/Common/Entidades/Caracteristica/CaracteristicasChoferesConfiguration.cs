@@ -8,7 +8,7 @@ internal sealed class CaracteristicasChoferesConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<CaracteristicasChoferes> builder)
     {
-        builder.ToTable("CaracteristicasChoferes");
+        builder.ToTable("CaracteristicasChoferes").HasNoKey();
 
         builder.Property(a => a.Chofer);
         builder.Property(a => a.Caracteristica);
