@@ -30,8 +30,8 @@ public class EntidadStrategyFactory : IEntidadStrategyFactory
          new ChoferStrategy(_query, _transactionalRepository, _logger, _eventosService);
 
     public IEntidadStrategy CreateProveedorStrategy() =>
-        new ProveedorStrategy(_query, _transactionalRepository);
+        new ProveedorStrategy(_query, _transactionalRepository, _logger, _eventosService);
 
     public IEntidadStrategy CreateUnidadStrategy() =>
-        new UnidadStrategy(_query, _transactionalRepository);
+        new UnidadStrategy(_query, _transactionalRepository, _logger, _eventosService);
 }

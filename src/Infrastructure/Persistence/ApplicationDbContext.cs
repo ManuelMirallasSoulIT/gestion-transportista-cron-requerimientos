@@ -29,6 +29,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PersonasFisicas> PersonasFisicas { get; set; }
     public DbSet<PersonasJuridicas> PersonasJuridicas { get; set; }
     public DbSet<CaracteristicasChoferes> CaracteristicasChoferes { get; set; }
+    public DbSet<CaracteristicasUnidades> CaracteristicasUnidades { get; set; }
+    public DbSet<CaracteristicasProveedores> CaracteristicasProveedores { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,7 +50,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             await transaction.CommitAsync();
             return true;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             //_logger.LogError(ex, $"For application {applicationType}. Occurred the following error: {ex.Message}");
             await transaction.RollbackAsync();
