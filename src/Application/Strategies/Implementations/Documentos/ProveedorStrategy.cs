@@ -87,7 +87,6 @@ public class ProveedorStrategy : IEntidadStrategy
 
             var proveedoresActivos = await _query
                                         .From<Proveedores>()
-                                        .Where(r => $"Activo = 1", where: TypeWhere.AND)
                                         .Where(r => $"((@Proveedor IS NOT NULL AND Id = @Proveedor) OR @Proveedor IS NULL)", new { requerimientoDto.Proveedor })
                                         .Execute() ?? new List<Proveedores>();
 
@@ -135,7 +134,7 @@ public class ProveedorStrategy : IEntidadStrategy
                     {
                         _logger.Information($"Creando requerimiento para proveedor {proveedor.Id} y requisito {requisito.Id}");
 
-                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id && m.Proveedor == proveedor.Id).ToList();
 
                         PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
                     }

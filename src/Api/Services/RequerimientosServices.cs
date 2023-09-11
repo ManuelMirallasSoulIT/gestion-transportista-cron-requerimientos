@@ -32,9 +32,12 @@ public class RequerimientosServices : BackgroundService
         {
             try
             {
+                _logger.LogInformation("Inicia del proceso de actualización de requerimientos.");
                 var eventos = await _mediator.Send(new GetAllEventosQuery() { TipoEvento = "ActualizarRequerimiento" }, stoppingToken);
 
-                if (eventos.Any())
+                _logger.LogInformation("Se encontraron {0} registros a procesar.", eventos?.Count());
+
+                if (eventos is not null && eventos.Any())
                 {
                     foreach (var evento in eventos)
                     {
@@ -43,6 +46,7 @@ public class RequerimientosServices : BackgroundService
                     }
                 }
 
+                _logger.LogInformation("Finaliza el proceso de actualización de requerimientos.");
             }
             catch (Exception ex)
             {

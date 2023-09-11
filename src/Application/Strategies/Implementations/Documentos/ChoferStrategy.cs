@@ -136,7 +136,7 @@ public class ChoferStrategy : IEntidadStrategy
                     {
                         _logger.Information($"Creando requerimiento para chofer {chofer.Id} y requisito {requisito.Id}");
 
-                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id && m.Chofer == chofer.Id).ToList();
 
                         PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
                     }

@@ -91,7 +91,7 @@ public static class PresentacionesHelper
         }
 
         // Si no, si hay por lo menos una Presentación no vencida con estado Aprobado, devuelve Estado Aprobado y el mayor Id de la Presentación.
-        if (presentacionesRequisito.Exists(m => m.Status == "A" && m.Vencimiento <= DateTime.Now.AddDays(requisito.Tolerancia)))
+        if (presentacionesRequisito.Exists(m => m.Status == "A" && m.Vencimiento >= DateTime.Now.AddDays(requisito.Tolerancia)))
         {
             requerimiento.Estado = "Aprobado";
             requerimiento.Presentacion = presentacionesRequisito.OrderByDescending(m => m.Id).First(m => m.Status == "A")?.Id;
@@ -107,7 +107,7 @@ public static class PresentacionesHelper
         //}
 
         // Si no, si hay por lo menos una Presentación no vencida con estado Pendiente, devuelve Estado Pendiente y el mayor Id de la Presentación.
-        if (presentacionesRequisito.Exists(m => m.Status == "P" && m.Vencimiento <= DateTime.Now.AddDays(requisito.Tolerancia)))
+        if (presentacionesRequisito.Exists(m => m.Status == "P" && m.Vencimiento >= DateTime.Now.AddDays(requisito.Tolerancia)))
         {
             requerimiento.Estado = "Pendiente";
             requerimiento.Presentacion = presentacionesRequisito.OrderByDescending(m => m.Id).First(m => m.Status == "P")?.Id;
@@ -115,8 +115,8 @@ public static class PresentacionesHelper
             return;
         }
 
-        // Si no, si hay por lo menos una Presentación no vencida con estado Aprobado, devuelve Estado Aprobado y el mayor Id de la Presentación.
-        if (presentacionesRequisito.Exists(m => m.Status == "A" && m.Vencimiento >= DateTime.Now.AddDays(requisito.Tolerancia)))
+        // Si no, si hay por lo menos una Presentación vencida con estado Aprobado, devuelve Estado Vencido y el mayor Id de la Presentación.
+        if (presentacionesRequisito.Exists(m => m.Status == "A" && m.Vencimiento <= DateTime.Now.AddDays(requisito.Tolerancia)))
         {
             requerimiento.Estado = "Vencido";
             requerimiento.Presentacion = presentacionesRequisito.OrderByDescending(m => m.Id).First(m => m.Status == "A")?.Id;

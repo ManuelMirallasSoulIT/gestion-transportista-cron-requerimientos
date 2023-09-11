@@ -137,7 +137,7 @@ public class UnidadStrategy : IEntidadStrategy
                     {
                         _logger.Information($"Creando requerimiento para unidad {unidad.Id} y requisito {requisito.Id}");
 
-                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id).ToList();
+                        var presentacionesRequisito = presentaciones.Where(m => m.Requisito == requisito.Id && m.Unidad == unidad.Id).ToList();
 
                         PresentacionesHelper.DeterminarMejorPresentacion(presentacionesRequisito, requerimientos, requerimiento, requisito);
                     }
