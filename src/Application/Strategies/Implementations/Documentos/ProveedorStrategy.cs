@@ -59,6 +59,7 @@ public class ProveedorStrategy : IEntidadStrategy
                 _repository.InsertRange(nuevosRequerimientos);
             }
 
+            evento.FechaHoraPublicado = DateTime.Now;
             await _eventosService.Update(evento);
             await _repository.SaveChangeAsync();
             _logger.Information("Proceso de actualización de requerimientos completado correctamente.");
@@ -125,7 +126,7 @@ public class ProveedorStrategy : IEntidadStrategy
                         Proveedor = proveedor.Id,
                         Requisito = requisito.Id,
                         FechaCreacion = DateTime.Now,
-                        UsuarioCreacion = requerimientoDto?.Usuario ?? "",
+                        UsuarioCreacion = requerimientoDto?.UsuarioCreacion ?? "",
                     };
 
                     var aplicaProveedor = caracteristicasProveedores.Any(m => m.Proveedor == proveedor.Id && m.Caracteristica == requisito.Caracteristica);

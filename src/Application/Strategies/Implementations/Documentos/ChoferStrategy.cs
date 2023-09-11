@@ -60,6 +60,7 @@ public class ChoferStrategy : IEntidadStrategy
                 _repository.InsertRange(nuevosRequerimientos);
             }
 
+            evento.FechaHoraPublicado = DateTime.Now;
             await _eventosService.Update(evento);
             await _repository.SaveChangeAsync();
             _logger.Information("Proceso de actualización de requerimientos completado correctamente.");
@@ -126,7 +127,7 @@ public class ChoferStrategy : IEntidadStrategy
                         Chofer = chofer.Id,
                         Requisito = requisito.Id,
                         FechaCreacion = DateTime.Now,
-                        UsuarioCreacion = requerimientoDto?.Usuario ?? "",
+                        UsuarioCreacion = requerimientoDto?.UsuarioCreacion ?? "",
                     };
 
                     var aplicaChofer = caracteristicasChoferes.Any(m => m.Chofer == chofer.Id && m.Caracteristica == requisito.Caracteristica);
